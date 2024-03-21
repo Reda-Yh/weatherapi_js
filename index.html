@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            /* background-color: #f2f2f2; */
+            text-align: center;
+            background-color: #87CEEB;
+            color: #333;
+        }
+        
+        .weather-card {
+            display: inline-block;
+            width: 300px;
+            background-color: #fff;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .weather-card h2 {
+            margin-top: 0;
+        }
+        
+        .weather-card img {
+            width: 50px;
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="color:royalblue">Météo</h1>
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <input type="text" class="form-control mb-3" id="city-input" placeholder="Entrez une ville">
+                <button class="btn btn-primary" onclick="getWeather()">Obtenir la météo</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="weather-card mx-auto" style="display: none;">
+        <h2>En ce moment à <span id="city"></span>, <span id="country"></span></h2>
+        <img src="" alt="weather" id="weather-icon">
+        <p><strong>Météo :</strong> <span id="weather"></span></p>
+        <p><strong>Température :</strong> <img id="temperature-icon" src="./weather_images/sunny.png" alt=""> <span id="temperature"></span>&deg;C</p>
+        <p><strong>Vent :</strong> <img id="wind-icon" src="./weather_images/winding.png" alt=""> <span id="wind-speed"></span> km/h</p>
+        <p><strong>Pression :</strong> <img id="pressure-icon" src="./weather_images/pression2.png" alt=""> <span id="pressure"></span> Pa</p>
+        <p><strong>Pluie :</strong> <img id="rain-icon" src="./weather_images/raining.png" alt=""> <span id="rain"></span> mm</p>
+    </div>
+
+    <script>
+function getWeather() {
+    const cityInput = document.getElementById("city-input");
+    const city = cityInput.value.trim();
+
+    if (city === "") {
+        alert("Veuillez entrer une ville.");
+        return;
+    }
+
+    fetchWeatherData(city)
+        .then(data => {
+            updateWeatherCard(data);
+        })
+        .catch(error => {
+            console.error("Une erreur s'est produite lors de la récupération des données météo :", error);
+            alert("Impossible de récupérer les données météo. Veuillez réessayer plus tard.");
+        });
+
+    cityInput.value = "";
+}
+
+function fetchWeatherData(city) {
+    const apiKey = "5eb1e1845ad64dd89ce125322231605";
+    const apiUrl = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${city}`;
+
+    return fetch(apiUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Erreur de réponse du serveur.");
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.error.message);
+            }
+            return data;
+        });
+}
+
+function updateWeatherCard(data) {
+    const weatherCard = document.querySelector(".weather-card");
+    const cityElement = document.getElementById("city");
+    const countryElement = document.getElementById("country");
+    const weatherElement = document.getElementById("weather");
+    const weatherIconElement = document.getElementById("weather-icon");
+    const temperatureElement = document.getElementById("temperature");
+    const windSpeedElement = document.getElementById("wind-speed");
+    const pressureElement = document.getElementById("pressure");
+    const rainElement = document.getElementById("rain");
+
+    weatherCard.style.display = "block";
+    cityElement.textContent = data.location.name;
+    countryElement.textContent = data.location.country;
+    weatherElement.textContent = data.current.condition.text;
+    weatherIconElement.src = data.current.condition.icon;
+    temperatureElement.textContent = data.current.temp_c;
+    windSpeedElement.textContent = data.current.wind_kph;
+    pressureElement.textContent = data.current.pressure_mb;
+    rainElement.textContent = data.current.precip_mm;
+}
+    </script>
+</body>
+</html>
